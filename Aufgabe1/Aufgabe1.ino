@@ -20,27 +20,27 @@
  */
 bool __attribute__((OS_buttonPress)) buttonPress(bool button) {
   bool press = 0;
-  asm volatile ("    CPI   %3, 1     \n\t"
-                "    BREQ AButton   \n\t"
-                "DButton:           \n\t"
-                "    IN   r16, %1   \n\t"
-                "    ANDI r16, 0x20 \n\t"
-                "    JMP  CMP       \n\t"
-                "AButton:           \n\t"
-                "    IN   r16, %2   \n\t"
-                "    ANDI r16, 0x18 \n\t"
-                "CMP:               \n\t"
-                "    CPI  r16, 0x0    \n\t"
-                "    BRNE PRESSED   \n\t"
-                "    LDI  %0, 0     \n\t"
-                "    JMP  END       \n\t"
-                "PRESSED:           \n\t"
-                "    LDI  %0, 1      \n\t"
-                "END:               \n\t"
-                "                   \n\t"
+  asm volatile ("    CPI   %[btn], 1   \n\t"
+                "    BREQ AButton      \n\t"
+                "DButton:              \n\t"
+                "    IN   r16, %[ping] \n\t"
+                "    ANDI r16, 0x20    \n\t"
+                "    JMP  CMP          \n\t"
+                "AButton:              \n\t"
+                "    IN   r16, %[pinf] \n\t"
+                "    ANDI r16, 0x18    \n\t"
+                "CMP:                  \n\t"
+                "    CPI  r16, 0x0     \n\t"
+                "    BRNE PRESSED      \n\t"
+                "    LDI  %[result], 0 \n\t"
+                "    JMP  END          \n\t"
+                "PRESSED:              \n\t"
+                "    LDI  %[result], 1 \n\t"
+                "END:                  \n\t"
+                "                      \n\t"
                 
-                : "=r" (press)
-                : "I" (_SFR_IO_ADDR(PING)), "I" (_SFR_IO_ADDR(PINF)), "w" (button)
+                : [result]"=r" (press)
+                : [ping] "I" (_SFR_IO_ADDR(PING)), [pinf] "I" (_SFR_IO_ADDR(PINF)), [btn] "w" (button)
                 : "r16"); 
   return press;
 }
