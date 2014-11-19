@@ -28,7 +28,7 @@ bool __attribute__((OS_buttonPress)) buttonPress(bool button) {
                 "    JMP  CMP          \n\t"
                 "AButton:              \n\t"
                 "    IN   r16, %[pinf] \n\t"
-                "    ANDI r16, 0x18    \n\t"
+                "    ANDI r16, 0x10    \n\t"
                 "CMP:                  \n\t"
                 "    CPI  r16, 0x0     \n\t"
                 "    BRNE PRESSED      \n\t"
