@@ -70,7 +70,7 @@ void FlySensorRot::getMeasurement(void *value){
   int16_t x, y, z;
   flydurino->getRotation(&x, &y, &z);
 
-#if 1
+#if 0
   static double mean[3][20] = {{0}};
   
   Serial.print("Means: x="); Serial.print(mean_push_get(mean[0], 20, x));
@@ -78,8 +78,18 @@ void FlySensorRot::getMeasurement(void *value){
   Serial.print(" x="); Serial.println(mean_push_get(mean[2], 20, z));
 #endif
   
-  float* uiValue = (float*)value;
-  uiValue[0] = ((float)x - mOffset[0])/131.0;
-  uiValue[1] = ((float)y - mOffset[1])/131.0;
-  uiValue[2] = ((float)z - mOffset[2])/131.0;
+  float rot_speed[3];
+  rot_speed[0] = ((float)x - mOffset[0])/131.0;
+  rot_speed[1] = ((float)y - mOffset[1])/131.0;
+  rot_speed[2] = ((float)z - mOffset[2])/131.0;
+  
+  float* returnValues = (float*)value;
+  
+  unsigned long time = millis();
+  for (int i = 0; i < 3; i++) {
+    mRotation[i] = mRotation[i] + rot_speed[i] * (time - mTime) / 1000;
+    returnValues[i] = mRotation[i];
+  }
+  
+  mTime = time;
 }

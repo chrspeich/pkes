@@ -86,7 +86,7 @@ void loop() {
     float rot[3];
     
     flyROT->getMeasurement(rot);
-    writetoDisplay(rot[2]);
+    writetoDisplay(rot[2], -1);
     
     Serial.print("z-rotation:"); Serial.println(rot[2]);
     
