@@ -13,6 +13,7 @@ class IrSensor : public Sensor {
     void configure();
     
     uint8_t mChannel;
+    double mean[5];
 };
 
 #endif

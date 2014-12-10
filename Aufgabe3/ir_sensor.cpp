@@ -1,6 +1,7 @@
 #include "ir_sensor.h"
 #include <math.h>
 #include <Arduino.h>
+#include "util.h"
 
 IrSensor::IrSensor(uint8_t channel) {
   mChannel = channel;
