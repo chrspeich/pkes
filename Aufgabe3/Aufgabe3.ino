@@ -41,6 +41,8 @@ IrSensor *ir1;
 IrSensor *ir2;
 Motor *left;
 Motor *right;
+bool rotating = false;
+int rotatingDirection = 1;
 
 void setup() {
   float version=0.4;
@@ -81,18 +83,18 @@ void setup() {
   
   right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, -1);
   left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, 1);
-  
-  right->move(0x3FF);
-  left->move(0x3FF);
 }
 
 void loop() {
   
   if(buttonPress(0)){
     mode = !mode;
+    Serial.println("Press!");
   }
   
   if(mode){
+    left->move(0);
+    right->move(0);
     float rot[3];
     
     flyROT->getMeasurement(rot);
@@ -104,9 +106,52 @@ void loop() {
     // rotate back in the oposite direction, see the video
     
   } else {
-    // todo
-    // perform a random walk, if an obstacle is detected ...
-    // perform a random rotation and move forward (or backward)
+    uint8_t ir1Distance, ir2Distance;
+    ir1->getMeasurement(&ir1Distance);
+    ir2->getMeasurement(&ir2Distance);
+    
+    if (ir1Distance < 10 || ir1Distance > 60 || ir2Distance < 10 || ir2Distance > 60) {
+      return;
+    }
+    
+    Serial.print("ir1: "); Serial.print(ir1Distance);  Serial.print("ir2: "); Serial.println(ir2Distance);
+    
+    if (rotating || ir1Distance < 25 || ir2Distance < 25) {
+      Serial.println("rotating");
+      writetoDisplay(0b11111110, 0, 0);
+      rotating = true;
+      
+//      if (rotatingDirection == 0) {
+//        if (ir1Distance < ir2Distance) {
+//          rotatingDirection = 1;
+//        }
+//        else {
+//          rotatingDirection = -1;
+//        }
+//      }
+      
+      if (rotatingDirection > 0) {
+        right->move(-0x1FF);
+        left->move(0x1FF);
+      }
+      else {
+        right->move(0x1FF);
+        left->move(-0x1FF);
+      }
+      
+      if (ir1Distance > 30 && ir2Distance > 30) {
+        rotating = false;
+        rotatingDirection = 1;
+      }
+    }
+    
+    if (!rotating) {
+      writetoDisplay(0, 0, 0b11111110);
+       
+      Serial.println("moving");
+      right->move(0x300);
+      left->move(0x300);
+    }
   } 
   
 }

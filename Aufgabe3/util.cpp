@@ -6,8 +6,8 @@ double mean_push_get(double* mean, size_t size, double next) {
   double n = 0;
   
   for (size_t i = 0; i < size; i++) {
-    result += mean[i];
-    n += 1;
+    result += i * mean[i];
+    n += i;
   }
   
   for (size_t i = 0; i < size - 1; i++) {
