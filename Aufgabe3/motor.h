@@ -24,6 +24,8 @@ public:
   *
   */
   void move(int16_t iSpeed){  
+    iSpeed *= m_DirAdapt;
+    
      if(iSpeed < 0)
      {
        *m_DirPort &= ~(1 << m_DirPin);
