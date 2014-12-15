@@ -70,9 +70,19 @@ void setup() {
   // 3. set the data-direction for motor direction pins
   //    located at arduino digital pin 12 and 13
  
-
+  TCCR1A = (1 << WGM11) | (1 << WGM10) | (1 << COM1A1);  
+  TCCR1B = (1 << CS12) | (1 << CS10);    //Control register for OC1A
+  
+  TCCR3A = (1 << WGM31) | (1 << WGM30) | (1 << COM3C1);
+  TCCR3B = (1 << CS32) | (1 << CS30);     //Control register for OC3C
+  
+  DDRE = (1 << PORTE5);  //Pin 3
+  DDRB = (1 << PORTB5) | (1 << PORTB6) | (1 << PORTB7);  //pins 11,12,13
+  
   right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, -1);
   left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, 1);
+  
+  right->move(0xFF);
   
 }
 

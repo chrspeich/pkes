@@ -23,8 +23,16 @@ public:
   * a positive value should move the whell forward and a negative backward ... 
   *
   */
-  void move(int16_t iSpeed){
-       
+  void move(int16_t iSpeed){  
+     if(iSpeed < 0)
+     {
+       *m_DirPort &= ~(1 << m_DirPin);
+       iSpeed *=-1;
+     }else     
+       *m_DirPort |= (1 << m_DirPin);
+     
+     *m_Low = iSpeed & 0xFF;
+     *m_High = (iSpeed >> 8) & 0xFF;
   };
 private:
   volatile uint8_t * m_High;
