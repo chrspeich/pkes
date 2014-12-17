@@ -94,3 +94,7 @@ void FlySensorRot::getMeasurement(void *value){
   
   mTime = time;
 }
+
+void FlySensorRot::reset() {
+  mRotation[0] = mRotation[1] = mRotation[2] = 0;
+}

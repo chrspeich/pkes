@@ -29,6 +29,7 @@ class FlySensorRot : public FlySensor {
   public:
     FlySensorRot();
     void getMeasurement(void* value);  
+    void reset();
   private:
     void configure();
   
