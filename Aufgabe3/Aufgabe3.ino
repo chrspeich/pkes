@@ -9,28 +9,24 @@
 
 bool __attribute__((OS_buttonPress)) buttonPress(bool button) {
   bool press = 0;
-  asm volatile ("    CPI   %[btn], 1   \n\t"
-                "    BREQ AButton      \n\t"
-                "DButton:              \n\t"
-                "    IN   r16, %[ping] \n\t"
-                "    ANDI r16, 0x20    \n\t"
-                "    JMP  CMP          \n\t"
-                "AButton:              \n\t"
-                "    IN   r16, %[pinf] \n\t"
-                "    ANDI r16, 0x18    \n\t"
-                "CMP:                  \n\t"
-                "    CPI  r16, 0x0     \n\t"
-                "    BRNE PRESSED      \n\t"
-                "    LDI  %[result], 0 \n\t"
-                "    JMP  END          \n\t"
-                "PRESSED:              \n\t"
-                "    LDI  %[result], 1 \n\t"
-                "END:                  \n\t"
-                "                      \n\t"
-                
-                : [result]"=r" (press)
-                : [ping] "I" (_SFR_IO_ADDR(PING)), [pinf] "I" (_SFR_IO_ADDR(PINF)), [btn] "w" (button)
-                : "r16"); 
+  
+  if (button == 0) {
+    press = (PING & 0x20);
+    
+    if (press) {
+      delay(200);
+      press = (PING & 0x20);
+    }
+  }
+  else {
+    press = (PINF & 0x18);
+    
+    if (press) {
+      delay(200);
+      press = (PINF & 0x18);
+    }
+  }
+  
   return press;
 }
 
