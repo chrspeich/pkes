@@ -78,11 +78,11 @@ void setup() {
   TCCR3A = (1 << WGM31) | (1 << WGM30) | (1 << COM3C1);
   TCCR3B = (1 << CS32);     //Control register for OC3C
   
-  DDRE = (1 << PORTE5);  //Pin 3
-  DDRB = (1 << PORTB5) | (1 << PORTB6) | (1 << PORTB7);  //pins 11,12,13
+  DDRE |= (1 << PORTE5);  //Pin 3
+  DDRB |= (1 << PORTB5) | (1 << PORTB6) | (1 << PORTB7);  //pins 11,12,13
   
-  right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, -1);
-  left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, 1);
+  right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, 1);
+  left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, -1);
 }
 
 void loop() {
@@ -118,7 +118,7 @@ void loop() {
     
     if (rotating || ir1Distance < 25 || ir2Distance < 25) {
       Serial.println("rotating");
-      writetoDisplay(0b11111110, 0, 0);
+      writetoDisplay(0, 0b0110110, 0);
       rotating = true;
       
 //      if (rotatingDirection == 0) {
@@ -146,7 +146,7 @@ void loop() {
     }
     
     if (!rotating) {
-      writetoDisplay(0, 0, 0b11111110);
+      writetoDisplay(0, 0b10010000, 0);
        
       Serial.println("moving");
       right->move(0x300);

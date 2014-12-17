@@ -50,10 +50,11 @@ FlySensorRot::FlySensorRot() : FlySensor(){
  */
 void FlySensorRot::configure() {
   flydurino->setDLPFMode(6);
-  
-  mOffset[0]   = -117.40;
-  mOffset[1]   = 78.25;
-  mOffset[2]   = 26.5;
+ // x=-112.13 y=186.67 x=-72.82
+
+  mOffset[0]   = -112.13;
+  mOffset[1]   = 186.67;
+  mOffset[2]   = -72.82;
   Serial.println(flydurino->getFullScaleGyroRange());
 }
 
@@ -70,7 +71,7 @@ void FlySensorRot::getMeasurement(void *value){
   int16_t x, y, z;
   flydurino->getRotation(&x, &y, &z);
 
-#if 0
+#if 1
   static double mean[3][20] = {{0}};
   
   Serial.print("Means: x="); Serial.print(mean_push_get(mean[0], 20, x));

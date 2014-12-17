@@ -22,14 +22,14 @@ void IrSensor::getMeasurement(void *value){
 
   float distance = 0.0;
 
-  if (mChannel == 2) {
-    float x = ((float)raw / 1024.0 * 2.56) / 12.0;
-    distance = 1/x + 0.42;
-  }
-  else {
+ // if (mChannel == 2) {
+  //  float x = ((float)raw / 1024.0 * 2.56) / 12.0;
+ //   distance = 1/x + 0.42;
+  //}
+  //else {
    float x = ((float)raw / 1024.0 * 2.56) / 19.333333333333;   
    distance = 1/x;
-  }
+//  }
    
    *(uint8_t*)value = (uint8_t)roundf(mean_push_get(this->mean, 5, distance));
 }
