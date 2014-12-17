@@ -21,6 +21,8 @@ void IrSensor::getMeasurement(void *value){
 //   float distance = 1/x + 0.42;
 
   float distance = 0.0;
+   Serial.print("raw: ");
+   Serial.println(raw);
 
  // if (mChannel == 2) {
   //  float x = ((float)raw / 1024.0 * 2.56) / 12.0;
