@@ -3,9 +3,26 @@
 
 #include <Wire.h>
 #include <Flydurino.h>
-#include "fly_sensor.h"
 #include "ir_sensor.h"
 #include "motor.h"
+#include "move.h"
+#include <avr/interrupt.h>
+#include <util/atomic.h>
+
+volatile uint32_t motorATicks = 0; 
+volatile uint32_t motorBTicks = 0;
+
+ISR(INT4_vect)
+{
+  motorATicks++;
+}
+
+ISR(PCINT0_vect)
+{
+//  if (EIFR & (1 << 4)) {
+    motorBTicks++;
+//  }
+}
 
 bool __attribute__((OS_buttonPress)) buttonPress(bool button) {
   bool press = 0;
@@ -40,6 +57,7 @@ IrSensor *ir1;
 IrSensor *ir2;
 Motor *left;
 Motor *right;
+Move* move;
 bool rotating = false;
 bool rotateBack = false;
 int rotatingDirection = 1;
@@ -83,6 +101,13 @@ void setup() {
   
   right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, 1);
   left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, -1);
+  move = new Move(right, &motorATicks, left, &motorBTicks);
+  
+  sei();
+  EIMSK |= (1 << 4);  // Demask INT4
+  PCICR |= (1 << 0);  // Enable change PC
+  PCMSK0 |= (1 << 4); // Demask PCINT4
+  EICRB |= (1 << 0);  // falling edge of PCINT4
 }
 
 static const uint8_t kDigits[] = {
@@ -156,11 +181,24 @@ const uint16_t kRotateSpeed = 0x1B0;
 
 void loop() {
   
-  if(buttonPress(0)){
-    mode = !mode;
-    Serial.println("Press!");
-  }
+//  if(buttonPress(0)){
+//    mode = !mode;
+//    Serial.println("Press!");
+//  }
+//  
+//  uint32_t aTicks;
+//  uint32_t bTicks;
+//  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//    aTicks = motorATicks;
+//    bTicks = motorBTicks;
+//  }
+//  Serial.print("Ticks a: ");Serial.print(aTicks);Serial.print(" b: ");Serial.println(bTicks);
+  move->do_work();
   
+  if (buttonPress(1)) {
+    move->drive(5);
+  }
+  return;
   if(mode){
 
     float rot[3];
