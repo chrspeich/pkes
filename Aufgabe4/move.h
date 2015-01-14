@@ -1,4 +1,5 @@
 #include "fly_Sensor.h"
+#include "motor.h"
 
 class Move
 {
@@ -6,7 +7,7 @@ class Move
     
     Move(Motor *left, Motor *right);
   
-    void rotate(int degrees);
+    void rotate(float degrees);
     
     /**
     * distance in cm 
@@ -15,5 +16,6 @@ class Move
     
  private:
    Motor *left, *right;
-   float* rotation;
+   FlySensorRot *flySensorRot;
+   const uint16_t kRotateSpeed = 0x1B0;
 };
