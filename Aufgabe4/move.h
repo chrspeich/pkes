@@ -3,6 +3,8 @@
 class Move
 {
   public:
+    
+    Move(Motor *left, Motor *right);
   
     void rotate(int degrees);
     
@@ -10,4 +12,8 @@ class Move
     * distance in cm 
     */
     void drive(int distance);
+    
+ private:
+   Motor *left, *right;
+   float* rotation;
 };
