@@ -12,9 +12,11 @@ Move::Move(Motor *left,Motor *right)
 void Move::rotate(float degrees)
 {
   float[3] rotation;
+  float angle;
+
+  while(true){
   flySensorRot->getMeasurement(rotation);
-  
-  float angle = rotation[2];
+  angle = rotation[2];
   float degreesToMove = degrees - angle;
       
       //Slower at the end for precision.
@@ -23,6 +25,7 @@ void Move::rotate(float degrees)
         if (abs(degreesToMove) < 2) {
           left->move(0);
           right->move(0);
+          break;
         }
         else {
           //slowly rotate right
@@ -47,6 +50,7 @@ void Move::rotate(float degrees)
         right->move(kRotateSpeed);
         left->move(-kRotateSpeed);
       }
+  }
 }
 
 void Move::drive(int distance)
