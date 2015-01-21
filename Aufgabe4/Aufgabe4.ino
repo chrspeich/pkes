@@ -61,6 +61,8 @@ Move* move;
 bool rotating = false;
 bool rotateBack = false;
 int rotatingDirection = 1;
+uint8_t step = 0;
+
 
 void setup() {
   float version=0.4;
@@ -94,7 +96,7 @@ void setup() {
   TCCR1B = (1 << CS11) | (1 << CS10);    //Control register for OC1A
   
   TCCR3A = (1 << WGM31) | (1 << WGM30) | (1 << COM3C1);
-  TCCR3B = (1 << CS31) | (1 << CS30);     //Control register for OC3C
+  TCCR3B = (1 << CS31);// | (1 << CS30);     //Control register for OC3C
   
   DDRE |= (1 << PORTE5);  //Pin 3
   DDRB |= (1 << PORTB5) | (1 << PORTB6) | (1 << PORTB7);  //pins 11,12,13
@@ -107,7 +109,9 @@ void setup() {
   EIMSK |= (1 << 4);  // Demask INT4
   PCICR |= (1 << 0);  // Enable change PC
   PCMSK0 |= (1 << 4); // Demask PCINT4
-  EICRB |= (1 << 0);  // falling edge of PCINT4
+  EICRB |= (1 << 1);  // any edge of PCINT4
+  
+  step = 0;
 }
 
 static const uint8_t kDigits[] = {
@@ -179,6 +183,9 @@ void writetoDisplayHelp1(bool rotating, int value, int8_t dot, bool sign) {
 
 const uint16_t kRotateSpeed = 0x1B0;
 
+uint32_t lastLeft = 0x0;
+uint32_t last;
+
 void loop() {
   
 //  if(buttonPress(0)){
@@ -192,115 +199,43 @@ void loop() {
 //    aTicks = motorATicks;
 //    bTicks = motorBTicks;
 //  }
-//  Serial.print("Ticks a: ");Serial.print(aTicks);Serial.print(" b: ");Serial.println(bTicks);
-  move->do_work();
+//  uint32_t diff = bTicks - lastLeft;
+//  lastLeft = bTicks;
+//  Serial.print("Diff ");Serial.println(diff);
+//  left->move(0x140);
+//  right->move(0x240);
+//  left->move(0x240);
+  uint32_t time = millis();
   
-  if (buttonPress(1)) {
-    move->drive(5);
+  float acc[3];
+  flyACC->getMeasurement(&acc);
+//  Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
+  
+//  if (fabs(acc[2]) > 80) {
+//    Serial.println("Stop");
+//    move->stop();
+//  }
+  
+  if (time - last > 200) {
+    if (!move->do_work()) {
+  
+      if (step == 0) {
+        if (buttonPress(1)) {
+          move->drive(500);
+          step++;
+        }
+      }
+      else if (step == 1) {
+        move->rotate(180);
+        step++;
+      }
+      else if (step == 2) {
+        move->drive(500);
+        step=0;
+      }
+    }
+    last = time;
   }
   return;
-  if(mode){
-
-    float rot[3];
-    
-    flyROT->getMeasurement(rot);
-    writetoDisplay(rot[2], rotateBack ? 1 : -1);
-    
-    Serial.print("z-rotation:"); Serial.println(rot[2]);
-    
-    if (rotateBack) {
-      float angle = rot[2];
-      
-      if (abs(angle) < 8) {
-        if (abs(angle) < 2) {
-          rotateBack = false;
-          left->move(0);
-          right->move(0);
-        }
-        else {
-          if (angle > 0) {
-            right->move(-kRotateSpeed - 20);
-            left->move(kRotateSpeed - 20);
-          }
-          else {
-            right->move(kRotateSpeed - 20);
-            left->move(-kRotateSpeed - 20);
-          }
-        }
-      }
-      
-      if (angle > 0) {
-        right->move(-kRotateSpeed);
-        left->move(kRotateSpeed);
-      }
-      else {
-        right->move(kRotateSpeed);
-        left->move(-kRotateSpeed);
-      }
-    }
-    else {
-      left->move(0);
-      right->move(0);
-      
-      if (buttonPress(1)) {
-        rotateBack = true;
-        Serial.println("Rotate engaged");
-      }
-    }
-    
-    // todo
-    // rotate back in the oposite direction, see the video
-    
-  } else {
-    uint8_t ir1Distance, ir2Distance;
-    ir1->getMeasurement(&ir1Distance);
-    ir2->getMeasurement(&ir2Distance);
-//    ir1Distance = ir2Distance;
-    
-    if (ir1Distance < 10 || ir1Distance > 60 || ir2Distance < 10 || ir2Distance > 60) {
-      return;
-    }
-    
-    uint8_t displayDistance = ir1Distance < ir2Distance ? ir1Distance : ir2Distance;
-    
-    Serial.print("ir1: "); Serial.print(ir1Distance);  Serial.print("ir2: "); Serial.println(ir2Distance);
-    
-    if (rotating || ir1Distance < 30 || ir2Distance < 30) {
-//      Serial.println("rotating");
-      writetoDisplayHelp1(true, displayDistance, 0, false);
-      rotating = true;
-      
-//      if (rotatingDirection == 0) {
-//        if (ir1Distance < ir2Distance) {
-//          rotatingDirection = 1;
-//        }
-//        else {
-//          rotatingDirection = -1;
-//        }
-//      }
-      
-      if (rotatingDirection > 0) {
-        right->move(-0x100);
-        left->move(0x100);
-      }
-      else {
-        right->move(0x100);
-        left->move(-0x100);
-      }
-      
-      if (ir1Distance > 35 && ir2Distance > 35) {
-        rotating = false;
-        rotatingDirection = 1;
-      }
-    }
-    
-    if (!rotating) {
-      writetoDisplayHelp1(false, displayDistance, 0, false);
-       
-//      Serial.println("moving");
-      right->move(0x240);
-      left->move(0x240);
-    }
-  } 
   
 }
