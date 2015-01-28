@@ -28,6 +28,8 @@ class Move
    uint32_t lastRightOdometrie;
    double leftMean[5];
    double rightMean[5];
+   double targetRightSpeed;
+   double targetLeftSpeed;
    int16_t rightSpeed;
    int16_t leftSpeed;
    float i;
@@ -36,7 +38,7 @@ class Move
    uint32_t beginLeftOdometrie;
    uint32_t beginRightOdometrie;
    FlySensorRot *flySensorRot;
-   const uint16_t kRotateSpeed = 0x1B0;
+   static const uint16_t kRotateSpeed = 0x115;
    float remainingAngle;
    float lastAngle;
 };

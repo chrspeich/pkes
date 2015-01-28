@@ -42,7 +42,7 @@ private:
   volatile uint8_t * m_DirPort;
   uint8_t m_DirPin;
   int8_t  m_DirAdapt;
-  const uint16_t kRotateSpeed = 0x1B0;
+  static const uint16_t kRotateSpeed = 0x1B0;
 };
 
 #endif

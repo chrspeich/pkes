@@ -14,7 +14,7 @@ volatile uint32_t motorBTicks = 0;
 
 ISR(INT4_vect)
 {
-  motorATicks++;
+  motorATicks+=2;
 }
 
 ISR(PCINT0_vect)
@@ -96,12 +96,12 @@ void setup() {
   TCCR1B = (1 << CS11) | (1 << CS10);    //Control register for OC1A
   
   TCCR3A = (1 << WGM31) | (1 << WGM30) | (1 << COM3C1);
-  TCCR3B = (1 << CS31);// | (1 << CS30);     //Control register for OC3C
+  TCCR3B = (1 << CS31) | (1 << CS30);     //Control register for OC3C
   
   DDRE |= (1 << PORTE5);  //Pin 3
   DDRB |= (1 << PORTB5) | (1 << PORTB6) | (1 << PORTB7);  //pins 11,12,13
   
-  right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, 1);
+  right = new Motor(&OCR3CH, &OCR3CL, &PORTB, 6, -1);
   left  = new Motor(&OCR1AH, &OCR1AL, &PORTB, 7, -1);
   move = new Move(right, &motorATicks, left, &motorBTicks);
   
@@ -184,6 +184,7 @@ void writetoDisplayHelp1(bool rotating, int value, int8_t dot, bool sign) {
 const uint16_t kRotateSpeed = 0x1B0;
 
 uint32_t lastLeft = 0x0;
+uint32_t lastRight = 0x0;
 uint32_t last;
 
 void loop() {
@@ -199,29 +200,37 @@ void loop() {
 //    aTicks = motorATicks;
 //    bTicks = motorBTicks;
 //  }
+//  
+//  uint32_t temp1 = aTicks;/// - lastLeft;
+//  uint32_t temp2 = bTicks;/// - lastRight)/2;
+//  lastLeft = aTicks;
+//  lastRight = bTicks;
+//  
+//  Serial.print("right: ");Serial.print(temp1);Serial.print(" left: ");Serial.println(temp2);
 //  uint32_t diff = bTicks - lastLeft;
 //  lastLeft = bTicks;
 //  Serial.print("Diff ");Serial.println(diff);
 //  left->move(0x140);
-//  right->move(0x240);
-//  left->move(0x240);
+//  right->move(0x100);
+//  left->move(0x140);
+//  delay(500);
   uint32_t time = millis();
-  
+//  
   float acc[3];
-  flyACC->getMeasurement(&acc);
-//  Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
+  flyROT->getMeasurement(&acc);
+  Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
   
-//  if (fabs(acc[2]) > 80) {
-//    Serial.println("Stop");
-//    move->stop();
-//  }
+  if (fabs(acc[0]) > 8) {
+    Serial.println("Stop");
+    move->stop();
+    step = 0;
+  }
   
-  if (time - last > 200) {
+  if (time - last > 500) {
     if (!move->do_work()) {
-  
       if (step == 0) {
         if (buttonPress(1)) {
-          move->drive(500);
+          move->drive(25);
           step++;
         }
       }
@@ -230,7 +239,7 @@ void loop() {
         step++;
       }
       else if (step == 2) {
-        move->drive(500);
+        move->drive(25);
         step=0;
       }
     }

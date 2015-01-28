@@ -52,9 +52,9 @@ void FlySensorRot::configure() {
   flydurino->setDLPFMode(6);
  // x=-112.13 y=186.67 x=-72.82
 
-  mOffset[0]   = 568.24;//-112.13;
-  mOffset[1]   = -59.05;//186.67;
-  mOffset[2]   = 50.54;//-72.82;
+  mOffset[0]   = -95.98;//-112.13;
+  mOffset[1]   = 16.35;//186.67;
+  mOffset[2]   = 67.77;//-72.82;
   Serial.println(flydurino->getFullScaleGyroRange());
 }
 

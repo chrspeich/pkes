@@ -1,5 +1,6 @@
 #include "display.h"
 #include "util.h"
+#include <math.h>
 
 static const uint8_t kDigits[] = {
   /* 0 => ABCDEF  */ 0b11111100,
