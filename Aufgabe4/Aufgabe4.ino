@@ -220,11 +220,11 @@ void loop() {
   flyROT->getMeasurement(&acc);
   Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
   
-  if (fabs(acc[0]) > 8) {
-    Serial.println("Stop");
-    move->stop();
-    step = 0;
-  }
+//  if (fabs(acc[0]) > 8) {
+//    Serial.println("Stop");
+//    move->stop();
+//    step = 0;
+//  }
   
   if (time - last > 500) {
     if (!move->do_work()) {
