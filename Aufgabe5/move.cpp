@@ -73,7 +73,7 @@ bool Move::do_work()
     double distanceTraveled = (((this->lastLeftOdometrie - this->beginLeftOdometrie) + (this->lastRightOdometrie - this->beginRightOdometrie))/2.0/120.0 * M_PI * 5)/10;
     
     if (distanceTraveled > this->distance) {
-      Serial.println("Done");
+//      Serial.println("Done");
       this->distance = 0;
       this->left->move(0);
       this->right->move(0);
@@ -81,27 +81,27 @@ bool Move::do_work()
     
     if (abs(left - this->targetLeftSpeed) > 5 && this->leftSpeed <= 0x360 && this->leftSpeed >= 0x100) {
       if (left < this->targetLeftSpeed) {
-        Serial.println("Increase left");
+//        Serial.println("Increase left");
         this->leftSpeed += 10;
       }
       else {
-        Serial.println("Decrease left");
+//        Serial.println("Decrease left");
         this->leftSpeed -= 10;
       }
     }
     
     if (abs(right - this->targetRightSpeed) > 5 && this->rightSpeed <= 0x360 && this->rightSpeed >= 0x100) {
       if (right < this->targetRightSpeed) {
-        Serial.println("Increase right");
+//        Serial.println("Increase right");
         this->rightSpeed += 10;
       }
       else {
-        Serial.println("Decrease right");
+//        Serial.println("Decrease right");
         this->rightSpeed -= 10;
       }
     }
     
-    Serial.print("Left: "); Serial.print(left); Serial.print(" ("); Serial.print(this->leftSpeed); Serial.print(") Right: "); Serial.print(right); Serial.print(" ("); Serial.print(this->rightSpeed); Serial.print(") Distance: ");Serial.println(distanceTraveled);
+//    Serial.print("Left: "); Serial.print(left); Serial.print(" ("); Serial.print(this->leftSpeed); Serial.print(") Right: "); Serial.print(right); Serial.print(" ("); Serial.print(this->rightSpeed); Serial.print(") Distance: ");Serial.println(distanceTraveled);
     this->left->move(this->leftSpeed);
     this->right->move(this->rightSpeed);
   }
@@ -111,10 +111,10 @@ bool Move::do_work()
 
       flySensorRot->getMeasurement(rotation);
       angle = rotation[2];
-      Serial.print(angle);Serial.print(":");
+//      Serial.print(angle);Serial.print(":");
       this->remainingAngle -= angle - this->lastAngle;
       this->lastAngle = angle;
-      Serial.println(remainingAngle);
+//      Serial.println(remainingAngle);
       //Slower at the end for precision.
       if (abs(remainingAngle) < 8) {
         //stop movement once done

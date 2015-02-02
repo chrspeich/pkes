@@ -38,7 +38,7 @@ class Move
    uint32_t beginLeftOdometrie;
    uint32_t beginRightOdometrie;
    FlySensorRot *flySensorRot;
-   static const uint16_t kRotateSpeed = 0x115;
+   static const uint16_t kRotateSpeed = 0x130;
    float remainingAngle;
    float lastAngle;
 };

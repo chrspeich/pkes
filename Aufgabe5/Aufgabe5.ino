@@ -14,6 +14,7 @@
 
 volatile uint32_t motorATicks = 0; 
 volatile uint32_t motorBTicks = 0;
+AppBuilder appb(16, 5, String("AVH\0"), 2048);
 
 ISR(INT4_vect)
 {
@@ -65,17 +66,108 @@ bool rotating = false;
 bool rotateBack = false;
 int rotatingDirection = 1;
 uint8_t step = 0;
+bool running = false;
 
+struct step {
+  uint8_t degree;
+  uint16_t distance;
+};
+
+struct step steps[10];
+struct step temp_step;
+uint8_t num_steps;
+
+uid8 statusLabelID;
+
+void degreeFieldCB(uid8 id, char *string)
+{
+  temp_step.degree = atoi(string);
+  appb.set_text(id, "");
+}
+
+void distanceFieldCB(uid8 id, char *string)
+{
+  temp_step.distance = atoi(string);
+  appb.set_text(id, "");
+}
+
+void addCB(uid8 id, char* unused)
+{
+  if (num_steps < 10) {
+    steps[num_steps].degree = temp_step.degree;
+    steps[num_steps].distance = temp_step.distance;
+    num_steps++;
+    appb.set_text(statusLabelID, "Status: Added");
+  }
+  else
+    appb.set_text(statusLabelID, "Status: Full");
+}
+
+void runCB(uid8 id, char* unused)
+{
+  step = 0;
+  running = true;
+  appb.set_text(statusLabelID, "Status: Running");
+}
+
+void clearCB(uid8 id, char* unused)
+{
+  memset(steps, 0, sizeof(steps));
+  num_steps = 0;
+  appb.set_text(statusLabelID, "Status: Cleared");
+}
+
+void onconnect (uid8 id, char *unwichtig)
+{
+
+    uid8 l = appb.start_layout();
+    statusLabelID = appb.add_label();
+    uid8 degreeTextFieldID = appb.add_input();
+    uid8 distanceTextFieldID = appb.add_input();
+    uid8 addButtonID = appb.add_button();
+    uid8 runButtonID = appb.add_button();
+    uid8 clearButtonID = appb.add_button();
+    appb.end_layout(l);
+
+    appb.send_components();
+
+    appb.set_text(degreeTextFieldID, "Degree:");
+    appb.set_text(distanceTextFieldID, "Distance:");
+    appb.set_text(addButtonID, "Add");
+    appb.set_text(runButtonID, "Run");
+    appb.set_text(clearButtonID, "Clear");
+    appb.set_text(statusLabelID, "Status: OK");
+
+    appb.add_callback(degreeTextFieldID, degreeFieldCB);
+    appb.add_callback(distanceTextFieldID, distanceFieldCB);
+    appb.add_callback(addButtonID, addCB);
+    appb.add_callback(runButtonID, runCB);
+    appb.add_callback(clearButtonID, clearCB);
+}
+
+void ondisconnect (uid8 id, char *unwichtig)
+{
+}
+
+void serialEvent()
+{
+    appb.serial_event();
+}
 
 void setup() {
   float version=0.4;
   
+  memset(steps, 0, sizeof(steps));
+  num_steps = 0;
+  appb.set_onconnect(onconnect);
+  appb.set_ondisconnect(ondisconnect);
+  
   Serial.begin(9600);
-  Serial.println("----------------------------------");
-  Serial.println("PKES Wintersemester 2014/15"       );
-  Serial.print  ("Vorlage 3. essBot - Version "      );
-  Serial.println(version                             );
-  Serial.println("----------------------------------");
+//  Serial.println("----------------------------------");
+//  Serial.println("PKES Wintersemester 2014/15"       );
+//  Serial.print  ("Vorlage 3. essBot - Version "      );
+//  Serial.println(version                             );
+//  Serial.println("----------------------------------");
 
   initDisplay();
   
@@ -191,7 +283,7 @@ uint32_t lastRight = 0x0;
 uint32_t last;
 
 void loop() {
-  
+  appb.refresh();
 //  if(buttonPress(0)){
 //    mode = !mode;
 //    Serial.println("Press!");
@@ -217,37 +309,50 @@ void loop() {
 //  right->move(0x100);
 //  left->move(0x140);
 //  delay(500);
-  uint32_t time = millis();
-//  
-  float acc[3];
-  flyROT->getMeasurement(&acc);
-  Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
-  
-  if (fabs(acc[0]) > 8) {
-    Serial.println("Stop");
-    move->stop();
-    step = 0;
-  }
-  
-  if (time - last > 500) {
-    if (!move->do_work()) {
-      if (step == 0) {
-        if (buttonPress(1)) {
-          move->drive(25);
-          step++;
+  if (running) {
+    uint32_t time = millis();
+  //  
+    float acc[3];
+    flyROT->getMeasurement(&acc);
+  //  Serial.print("1: ");Serial.print(acc[0]);Serial.print("2: ");Serial.print(acc[1]);Serial.print("3: ");Serial.println(acc[2]);
+    
+//    if (fabs(acc[0]) > 8) {
+//      Serial.println("Stop");
+//      running = false;
+//      move->stop();
+//      step = 0;
+//    }
+    
+    if (time - last > 500) {
+      if (!move->do_work()) {
+        if (num_steps == 0) {
+          running = false;
+          appb.set_text(statusLabelID, "Status: Stopped");
+          move->stop();
         }
-      }
-      else if (step == 1) {
-        move->rotate(180);
+        
+        if (step % 2 == 0) {
+          if (steps[step/2].degree) {
+            move->rotate(steps[step/2].degree);
+          }
+        }
+        else {
+          if (steps[step/2].distance) {
+            move->drive(steps[step/2].distance);
+          }
+          num_steps--;
+        }
         step++;
       }
-      else if (step == 2) {
-        move->drive(25);
-        step=0;
-      }
+      last = time;
     }
-    last = time;
   }
+  else {
+    move->stop();
+  }
+  
+  writetoDisplay(num_steps);
+
   return;
   
 }
